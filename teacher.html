@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher - Queue Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        p {
+            font-size: 14px;
+            color: #555;
+        }
+        #room-status {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #222;
+        }
+        #room-status strong {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000';
+
+        let roomStatusInterval;
+
+        async function createRoom() {
+            try {
+                const response = await fetch(`${API_BASE}/create_room`, { method: 'POST' });
+                const data = await response.json();
+                document.getElementById('room-info').textContent = `Room ID: ${data.room_id}`;
+                startRoomStatusUpdate(data.room_id);
+            } catch (error) {
+                console.error(error);
+                alert('Error creating room.');
+            }
+        }
+
+        async function notifyNext() {
+            try {
+                const roomId = document.getElementById('room-id').value;
+                const response = await fetch(`${API_BASE}/notify_next/${roomId}`, { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error(error);
+                alert('Error notifying next student.');
+            }
+        }
+
+        async function removeCurrent() {
+            try {
+                const roomId = document.getElementById('room-id').value;
+                const response = await fetch(`${API_BASE}/remove_current/${roomId}`, { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error(error);
+                alert('Error removing current student.');
+            }
+        }
+
+        async function removeAll() {
+            try {
+                const roomId = document.getElementById('room-id').value;
+                const response = await fetch(`${API_BASE}/remove_all/${roomId}`, { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error(error);
+                alert('Error removing all students.');
+            }
+        }
+
+        async function getRoomStatus(roomId) {
+            try {
+                const response = await fetch(`${API_BASE}/get_room_status/${roomId}`, { method: 'GET' });
+                const data = await response.json();
+                const status = `
+                    <strong>Current Student:</strong> ${data.current_student || 'None'}<br>
+                    <strong>Queue:</strong> ${data.queue.join(', ')}
+                `;
+                document.getElementById('room-status').innerHTML = status;
+            } catch (error) {
+                console.error(error);
+                alert('Error getting room status.');
+            }
+        }
+
+        function startRoomStatusUpdate(roomId) {
+            clearInterval(roomStatusInterval);
+            roomStatusInterval = setInterval(() => {
+                getRoomStatus(roomId);
+            }, 500); // Update every 500ms
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Teacher - Queue Management</h1>
+        <button onclick="createRoom()">Create Room</button>
+        <p id="room-info">Room ID will appear here.</p>
+        <input type="text" id="room-id" placeholder="Enter Room ID">
+        <button onclick="notifyNext()">Notify Next Student</button>
+        <button onclick="removeCurrent()">Remove Current Student</button>
+        <button onclick="removeAll()">Remove All Students</button>
+        <p id="room-status">Room status will appear here.</p>
+    </div>
+</body>
+</html>
