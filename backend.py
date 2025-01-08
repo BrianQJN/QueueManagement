@@ -26,6 +26,11 @@ def join_room(room_id):
     if not student_id:
         return jsonify({"error": "Student ID is required"}), 400
 
+    # Check if the student is already in the queue of the current room
+    if student_id in rooms[room_id]['queue']:
+        return jsonify({"message": "Student already in the queue", "student_id": student_id})
+
+    # Add student to the queue
     rooms[room_id]['queue'].append(student_id)
     return jsonify({"message": "Joined room", "student_id": student_id})
 
